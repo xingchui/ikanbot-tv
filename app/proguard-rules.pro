@@ -1,0 +1,1 @@
+-keepattributes Signature,*Annotation*`n-keep class androidx.** { *; }`n-keep class com.ikanbot.tv.** { *; }`n-keepclassmembers class * { @android.webkit.JavascriptInterface <methods>; }

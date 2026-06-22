@@ -1,0 +1,24 @@
+# Gradle
+.gradle/
+build/
+*/build/
+idea/
+*.iml
+*.ipr
+*.iws
+
+# Android
+.idea/libraries/
+.idea/caches/
+.idea/modules.xml
+*.apk
+
+# Keystore
+*.jks
+*.keystore
+
+# Local config
+local.properties
+
+# Generated
+app/build/

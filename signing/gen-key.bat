@@ -1,0 +1,2 @@
+@echo off
+keytool -genkey -v -keystore release.jks -keyalg RSA -keysize 2048 -validity 10000 -storepass ikanbot123 -keypass ikanbot123 -alias ikanbot-release -dname "CN=ikanbot TV, OU=Dev, O=ikanbot, L=Beijing, ST=Beijing, C=CN"
