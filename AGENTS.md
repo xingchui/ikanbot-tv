@@ -49,7 +49,7 @@ Gradle and ProGuard will misparse them. Replace `` `n `` with real line breaks:
 - `app/proguard-rules.pro`
 
 The `distributionUrl` in `gradle-wrapper.properties` also uses `\\://` instead of
-`://` — Gradle handles this but it's non-standard.
+`://` — fix it or `gradle wrapper` will fail.
 
 ## App structure
 
