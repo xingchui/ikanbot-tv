@@ -22,6 +22,16 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      - name: Setup Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          SDKMANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+          [ -x "$SDKMANAGER" ] || SDKMANAGER=$ANDROID_HOME/tools/bin/sdkmanager
+          if [ -x "$SDKMANAGER" ]; then
+            yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+            "$SDKMANAGER" --install "platforms;android-34" "build-tools;34.0.0" > /dev/null 2>&1 || true
+          fi
+
       - name: Make wrapper executable
         run: chmod +x gradlew
 
