@@ -6,8 +6,4 @@
         <item name="colorAccent">@color/accent</item>
         <item name="android:windowFullscreen">true</item>
     </style>
-    <style name="Theme.IkanbotTV.Leanback" parent="Theme.Leanback">
-        <item name="lbBackground">@color/primary</item>
-        <item name="brandColor">@color/accent</item>
-    </style>
 </resources>
