@@ -19,14 +19,12 @@ verification).
 
 ## Build
 
-**There is no `gradlew` in the repo.** Always run `gradle wrapper` first:
+**Gradle wrapper files are committed to the repo** (`gradlew`, `gradlew.bat`,
+`gradle/wrapper/gradle-wrapper.jar`). No local Gradle installation needed:
 
 ```bash
-gradle wrapper --gradle-version 8.7
 ./gradlew assembleDebug
 ```
-
-CI does the same (see `.github/workflows/build.yml`).
 
 | Command | Purpose |
 |---|---|
@@ -41,15 +39,16 @@ CI does the same (see `.github/workflows/build.yml`).
 
 ## Known config bugs — fix before first build
 
-Three files contain literal `` `n `` (backtick-n) instead of actual newlines.
-Gradle and ProGuard will misparse them. Replace `` `n `` with real line breaks:
+Three files contained literal `` `n `` (backtick-n) instead of actual newlines.
+If `gradle.properties`, `gradle/wrapper/gradle-wrapper.properties`, or
+`app/proguard-rules.pro` have properties on a single line separated by `` `n ``,
+replace `` `n `` with real line breaks.
 
-- `gradle.properties`
-- `gradle/wrapper/gradle-wrapper.properties`
-- `app/proguard-rules.pro`
+The `distributionUrl` in `gradle-wrapper.properties` originally used `\\://`
+instead of `://` — this has been fixed to use `://`.
 
-The `distributionUrl` in `gradle-wrapper.properties` also uses `\\://` instead of
-`://` — fix it or `gradle wrapper` will fail.
+These bugs have been fixed in the current version of these files, but may
+reappear if an editor saves them with literal backtick-n sequences.
 
 ## App structure
 
