@@ -23,33 +23,13 @@ jobs:
           cache: gradle
 
       - name: Setup Android SDK
-        run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls -la /usr/local/lib/android/sdk/ 2>/dev/null || echo "SDK not found at default path"
-          echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
-          cat local.properties
+        run: echo "sdk.dir=/usr/local/lib/android/sdk" > local.properties
 
       - name: Make wrapper executable
         run: chmod +x gradlew
 
       - name: Build Debug APK
-        shell: bash
-        run: |
-          set +e
-          ./gradlew assembleDebug --no-daemon --stacktrace > build-output.log 2>&1
-          EXIT_CODE=$?
-          echo "GRADLE_EXIT_CODE=$EXIT_CODE" >> build-output.log
-          echo "Build exit code: $EXIT_CODE"
-          cat build-output.log
-          exit $EXIT_CODE
-
-      - name: Upload build logs
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-logs
-          path: build-output.log
-          retention-days: 7
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK artifacts
         if: success()
