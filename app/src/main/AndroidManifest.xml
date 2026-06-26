@@ -41,5 +41,10 @@
                 <data android:scheme="https"/>
             </intent-filter>
         </activity>
+        <activity
+            android:name=".VideoPlayerActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"/>
     </application>
 </manifest>

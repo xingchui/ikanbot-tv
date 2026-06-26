@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.CookieManager
+import android.webkit.JavascriptInterface
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -77,7 +78,18 @@ class MainActivity : AppCompatActivity() {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
         }
+        webView.addJavascriptInterface(WebAppInterface(), "Android")
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?, request: WebResourceRequest?
+            ): Boolean {
+                val url = request?.url?.toString() ?: return false
+                return when {
+                    isVideoUrl(url) -> { playWithExoPlayer(url); true }
+                    isVerifyPage(url, null) -> { openInExternalBrowser(url); true }
+                    else -> false
+                }
+            }
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 injectAntiDetection()
@@ -109,6 +121,35 @@ class MainActivity : AppCompatActivity() {
                 Object.defineProperty(navigator, 'platform', {get: ()=>'Android TV'});
                 Object.defineProperty(navigator, 'hardwareConcurrency', {get: ()=>4});
                 if (!navigator.deviceMemory) Object.defineProperty(navigator, 'deviceMemory', {get: ()=>4});
+
+                var VIDEO_RE = /\.(mp4|m3u8|ts|webm|mkv|flv|avi)/i;
+                new MutationObserver(function(muts) {
+                    for (var m of muts)
+                        for (var n of m.addedNodes) {
+                            if (n.tagName === 'IFRAME') {
+                                var src = n.src || n.getAttribute('src') || '';
+                                if (VIDEO_RE.test(src)) {
+                                    try { n.src = ''; } catch(e) {}
+                                    Android.playWithExoPlayer(src);
+                                }
+                            }
+                            if (n.tagName === 'VIDEO') {
+                                var src = n.currentSrc || n.src || '';
+                                if (VIDEO_RE.test(src)) Android.playWithExoPlayer(src);
+                            }
+                        }
+                }).observe(document, {childList: true, subtree: true});
+
+                var _open = window.open;
+                window.open = function(url) {
+                    if (url && VIDEO_RE.test(url)) { Android.playWithExoPlayer(url); return null; }
+                    return _open.apply(this, arguments);
+                };
+                var _assign = location.assign;
+                location.assign = function(url) {
+                    if (url && VIDEO_RE.test(url)) { Android.playWithExoPlayer(url); return; }
+                    return _assign.apply(this, arguments);
+                };
             })();
         """.trimIndent(), null)
     }
@@ -122,7 +163,18 @@ class MainActivity : AppCompatActivity() {
             VERIFY_KEYWORDS.any { txt.contains(it.lowercase()) }
         }
 
-    private fun openInBrowser(url: String) {
+    private fun playWithExoPlayer(url: String) {
+        try {
+            startActivity(Intent(this, VideoPlayerActivity::class.java).apply {
+                putExtra("video_url", url)
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            })
+        } catch (e: ActivityNotFoundException) {
+            openInExternalBrowser(url)
+        }
+    }
+
+    private fun openInExternalBrowser(url: String) {
         try {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -130,6 +182,14 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "将在浏览器中打开", Toast.LENGTH_SHORT).show()
         } catch (e: ActivityNotFoundException) {
             Toast.makeText(this, "未找到可用的浏览器", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @Suppress("unused")
+    inner class WebAppInterface {
+        @JavascriptInterface
+        fun playWithExoPlayer(url: String) {
+            this@MainActivity.playWithExoPlayer(url)
         }
     }
 
