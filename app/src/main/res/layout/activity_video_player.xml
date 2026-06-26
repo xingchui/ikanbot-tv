@@ -10,9 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:resize_mode="fit"
-        app:use_controller="true"
-        app:show_buffering="when_playing"
-        app:controller_show_timeout_ms="3000" />
+        app:use_controller="true" />
 
     <FrameLayout
         android:id="@+id/loadingView"
