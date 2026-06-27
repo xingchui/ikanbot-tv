@@ -1,1 +1,0 @@
-[    3266ms] [WARNING] VIDEOJS: WARN: videojs.mergeOptions is deprecated and will be removed in 9.0; please use videojs.obj.merge instead. @ https://cdnjs.cloudflare.com/ajax/libs/video.js/8.4.0/video.min.js:11

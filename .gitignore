@@ -24,3 +24,7 @@ local.properties
 app/build/
 # OpenCode
 .omo/
+
+# Playwright
+.playwright-cli/
+.playwright-mcp/
