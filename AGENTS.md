@@ -8,14 +8,8 @@ verification).
 
 - **Entrypoint**: `MainActivity` → loads `https://www.ikanbot.com/` in a `FocusableWebView`
 - **Video redirect**: when a URL matches a video pattern (`/play/`, `.mp4`, `m3u8`, etc.)
-  or a dynamically created `<iframe>`/`<video>` element is detected, `VideoPlayerActivity`
-  plays it natively via ExoPlayer (Media3). Verification pages (captcha/验证) still open
-  in the system browser via `BrowserHelperActivity` / `Intent.ACTION_VIEW`.
-  Three interception layers:
-  1. `shouldOverrideUrlLoading` — intercepts top-level navigation to video URLs
-  2. `MutationObserver` + `window.open`/`location.assign` hook via injected JS — catches
-     dynamically created iframe/video elements
-  3. `@JavascriptInterface` bridge (`WebAppInterface`) — routes JS-detected URLs to native code
+  or a verification keyword (captcha/验证), `BrowserHelperActivity` opens it in the
+  system browser via `Intent.ACTION_VIEW`
 - **Antidetection JS**: injected after every `onPageFinished` — spoofs `webdriver`,
   `plugins`, `languages`, `platform`, `hardwareConcurrency`, blocks notification prompt
 - **TV remote**: `dispatchKeyEvent` remaps DPAD_CENTER/ENTER to WebView focus;
@@ -60,12 +54,10 @@ reappear if an editor saves them with literal backtick-n sequences.
 
 | Path | Role |
 |---|---|
-| `app/src/main/java/com/ikanbot/tv/MainActivity.kt` | WebView host, video URL detection, JS injection, shouldOverrideUrlLoading interception |
+| `app/src/main/java/com/ikanbot/tv/MainActivity.kt` | WebView host, video URL detection, JS injection |
 | `app/src/main/java/com/ikanbot/tv/FocusableWebView.kt` | Custom WebView: TV remote focus highlight |
-| `app/src/main/java/com/ikanbot/tv/BrowserHelperActivity.kt` | Transparent activity → `Intent.ACTION_VIEW` (fallback for captcha/verify pages) |
-| `app/src/main/java/com/ikanbot/tv/VideoPlayerActivity.kt` | ExoPlayer (Media3) native video player for intercepted video URLs |
+| `app/src/main/java/com/ikanbot/tv/BrowserHelperActivity.kt` | Transparent activity → `Intent.ACTION_VIEW` |
 | `app/src/main/res/layout/activity_main.xml` | Layout with top bar, loading overlay, error view |
-| `app/src/main/res/layout/activity_video_player.xml` | ExoPlayer PlayerView layout |
 | `app/src/main/res/values/` | colors.xml, strings.xml, themes.xml |
 | `app/src/main/res/drawable/tv_banner.xml` | Leanback banner (references ic_launcher) |
 
@@ -77,7 +69,7 @@ reappear if an editor saves them with literal backtick-n sequences.
 - `viewBinding = true`, `android.useAndroidX = true`
 - No version catalog — plain dependency strings in `app/build.gradle.kts`
 - Dependencies: `androidx.leanback`, `appcompat`, `constraintlayout`, `activity-ktx`,
-  `lifecycle-viewmodel-ktx`, `core-ktx`, `media3-exoplayer`, `media3-exoplayer-hls`, `media3-ui`
+  `lifecycle-viewmodel-ktx`, `core-ktx`
 - `usesCleartextTraffic="false"` in manifest (all traffic is HTTPS)
 
 ## Testing

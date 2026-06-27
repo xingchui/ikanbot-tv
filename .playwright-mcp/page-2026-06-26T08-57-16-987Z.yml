@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - region "视频播放器" [ref=e7]:
+      - application "警告：请切勿相信播放视频中的任何广告。" [ref=e8]
+      - generic:
+        - generic: 警告：请切勿相信播放视频中的任何广告。
+        - generic: 强烈建议使用谷歌浏览器(Chrome)，视频资源加载更流畅，兼容性更好。
+      - button "播放视频" [ref=e9] [cursor=pointer]:
+        - text: 
+        - generic [ref=e10]: 播放视频
+      - text:              
+  - generic [ref=e11]:
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - heading "长尾豹马修" [level=1] [ref=e15]
+        - text: 线路选择
+        - text: (线路利用网络爬虫技术获取，各线路的版本、清晰度、播放速度等存在差异请自行切换。建议避开晚上高峰时段。)
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - generic [ref=e19]: 线路加载中......
+      - generic [ref=e23]:
+        - img "长尾豹马修" [ref=e24]
+        - generic [ref=e25]:
+          - heading "长尾豹马修" [level=2] [ref=e26]
+          - heading "Marsupilami" [level=3] [ref=e27]
+          - heading "2026" [level=3] [ref=e28]
+          - heading "法国,比利时" [level=3] [ref=e29]
+          - heading "菲利普·拉肖/菲利普·拉肖,贾梅尔·杜布兹,塔雷克·布达里,艾洛蒂·丰唐,朱利安·阿鲁蒂" [level=3] [ref=e30]
+    - link "回首页" [ref=e33] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e34]: 回首页

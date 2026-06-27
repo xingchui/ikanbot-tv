@@ -22,9 +22,5 @@ local.properties
 
 # Generated
 app/build/
-# Playwright artifacts
-.playwright-cli/
-.playwright-mcp/
-
 # OpenCode
 .omo/

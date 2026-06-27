@@ -78,23 +78,29 @@ class MainActivity : AppCompatActivity() {
             setAcceptCookie(true)
             setAcceptThirdPartyCookies(webView, true)
         }
-        webView.addJavascriptInterface(WebAppInterface(), "Android")
+
+        // JS bridge for dynamic video detection from injected script
+        webView.addJavascriptInterface(VideoUrlBridge(), "Android")
+
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(
                 view: WebView?, request: WebResourceRequest?
             ): Boolean {
                 val url = request?.url?.toString() ?: return false
-                return when {
-                    isVideoUrl(url) -> { playWithExoPlayer(url); true }
-                    isVerifyPage(url, null) -> { openInExternalBrowser(url); true }
-                    else -> false
-                }
+                return handleUrlOverride(url)
             }
+
+            @Deprecated("Deprecated in API 24+")
+            override fun shouldOverrideUrlLoading(view: WebView?, url: String?): Boolean {
+                return handleUrlOverride(url ?: return false)
+            }
+
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 injectAntiDetection()
                 hideLoading()
             }
+
             override fun onReceivedError(
                 view: WebView?, request: WebResourceRequest?, error: WebResourceError?
             ) {
@@ -104,6 +110,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun handleUrlOverride(url: String): Boolean = when {
+        isVideoUrl(url) -> { openInBrowser(url); true }
+        isVerifyPage(url, null) -> { openInBrowser(url); true }
+        else -> false
     }
 
     private fun injectAntiDetection() {
@@ -122,34 +134,34 @@ class MainActivity : AppCompatActivity() {
                 Object.defineProperty(navigator, 'hardwareConcurrency', {get: ()=>4});
                 if (!navigator.deviceMemory) Object.defineProperty(navigator, 'deviceMemory', {get: ()=>4});
 
-                var VIDEO_RE = /\.(mp4|m3u8|ts|webm|mkv|flv|avi)/i;
-                new MutationObserver(function(muts) {
-                    for (var m of muts)
-                        for (var n of m.addedNodes) {
-                            if (n.tagName === 'IFRAME') {
-                                var src = n.src || n.getAttribute('src') || '';
-                                if (VIDEO_RE.test(src)) {
-                                    try { n.src = ''; } catch(e) {}
-                                    Android.playWithExoPlayer(src);
+                /* ---- Video auto-detection ---- */
+                new MutationObserver(function(mutations) {
+                    for (var m of mutations)
+                        for (var node of m.addedNodes) {
+                            if (node.tagName === 'IFRAME') {
+                                var src = node.src || node.getAttribute('src') || '';
+                                if (src && /\.(mp4|m3u8|ts|webm|mkv|flv)/i.test(src)) {
+                                    Android.openInBrowser(src);
+                                    node.src = '';
                                 }
                             }
-                            if (n.tagName === 'VIDEO') {
-                                var src = n.currentSrc || n.src || '';
-                                if (VIDEO_RE.test(src)) Android.playWithExoPlayer(src);
+                            if (node.tagName === 'VIDEO' && node.src) {
+                                if (/\.(mp4|m3u8|ts|webm|mkv|flv)/i.test(node.src)) {
+                                    Android.openInBrowser(node.src);
+                                    node.pause();
+                                    node.src = '';
+                                }
                             }
                         }
                 }).observe(document, {childList: true, subtree: true});
 
-                var _open = window.open;
-                window.open = function(url) {
-                    if (url && VIDEO_RE.test(url)) { Android.playWithExoPlayer(url); return null; }
-                    return _open.apply(this, arguments);
-                };
-                var _assign = location.assign;
-                location.assign = function(url) {
-                    if (url && VIDEO_RE.test(url)) { Android.playWithExoPlayer(url); return; }
-                    return _assign.apply(this, arguments);
-                };
+                document.addEventListener('click', function(e) {
+                    var link = e.target.closest('a');
+                    if (link && link.href && /\.(mp4|m3u8|ts|webm|mkv|flv)/i.test(link.href)) {
+                        e.preventDefault();
+                        Android.openInBrowser(link.href);
+                    }
+                }, true);
             })();
         """.trimIndent(), null)
     }
@@ -163,33 +175,25 @@ class MainActivity : AppCompatActivity() {
             VERIFY_KEYWORDS.any { txt.contains(it.lowercase()) }
         }
 
-    private fun playWithExoPlayer(url: String) {
-        try {
-            startActivity(Intent(this, VideoPlayerActivity::class.java).apply {
-                putExtra("video_url", url)
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            })
-        } catch (e: ActivityNotFoundException) {
-            openInExternalBrowser(url)
-        }
-    }
-
-    private fun openInExternalBrowser(url: String) {
-        try {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            })
-            Toast.makeText(this, "将在浏览器中打开", Toast.LENGTH_SHORT).show()
-        } catch (e: ActivityNotFoundException) {
-            Toast.makeText(this, "未找到可用的浏览器", Toast.LENGTH_LONG).show()
-        }
-    }
-
-    @Suppress("unused")
-    inner class WebAppInterface {
-        @JavascriptInterface
-        fun playWithExoPlayer(url: String) {
-            this@MainActivity.playWithExoPlayer(url)
+    private fun openInBrowser(url: String) {
+        if (isVideoUrl(url)) {
+            try {
+                startActivity(Intent(this, VideoPlayerActivity::class.java).apply {
+                    putExtra("video_url", url)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                })
+            } catch (e: Exception) {
+                Toast.makeText(this, "无法播放视频", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                })
+                Toast.makeText(this, "将在浏览器中打开", Toast.LENGTH_SHORT).show()
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(this, "未找到可用的浏览器", Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -220,5 +224,13 @@ class MainActivity : AppCompatActivity() {
     private fun showError(msg: String) {
         loadingOverlay.visibility = View.GONE; errorView.visibility = View.VISIBLE
         errorView.text = msg
+    }
+
+    /** Bridge called by injected JavaScript to intercept dynamically loaded video URLs. */
+    inner class VideoUrlBridge {
+        @JavascriptInterface
+        fun openInBrowser(url: String) {
+            runOnUiThread { this@MainActivity.openInBrowser(url) }
+        }
     }
 }

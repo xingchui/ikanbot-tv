@@ -45,6 +45,7 @@
             android:name=".VideoPlayerActivity"
             android:exported="false"
             android:screenOrientation="landscape"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"/>
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation|keyboardHidden"
+            android:theme="@style/Theme.IkanbotTV" />
     </application>
 </manifest>
