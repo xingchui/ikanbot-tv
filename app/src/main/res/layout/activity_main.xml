@@ -43,8 +43,9 @@
         android:padding="32dp" android:visibility="gone" tools:visibility="visible">
         <ImageView android:layout_width="64dp" android:layout_height="64dp"
             android:src="@android:drawable/ic_dialog_alert" android:tint="#FF6B6B"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="16dp" android:gravity="center" android:text="连接失败，请检查网络"
+        <TextView android:id="@+id/errorMessage" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_marginTop="16dp"
+            android:gravity="center" android:text="连接失败，请检查网络"
             android:textColor="#FFFFFF" android:textSize="18sp"/>
         <Button android:id="@+id/btnRetry" android:layout_width="wrap_content"
             android:layout_height="wrap_content" android:layout_marginTop="24dp"

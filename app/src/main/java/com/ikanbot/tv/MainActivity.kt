@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var webView: WebView
     private lateinit var loadingOverlay: FrameLayout
-    private lateinit var errorView: TextView
+    private lateinit var errorView: View
+    private lateinit var errorMessage: TextView
 
     private val VIDEO_PATTERNS = listOf(
         "/play/", "/vod/", "/watch/", "/detail/",
@@ -59,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         webView = findViewById(R.id.webView)
         loadingOverlay = findViewById(R.id.loadingOverlay)
         errorView = findViewById(R.id.errorView)
+        errorMessage = findViewById(R.id.errorMessage)
     }
 
     private fun setupWebView() {
@@ -202,12 +204,14 @@ class MainActivity : AppCompatActivity() {
             when (it.keyCode) {
                 KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
                     if (it.action == KeyEvent.ACTION_UP) {
+                        if (!::webView.isInitialized) return false
                         webView.requestFocus()
                         return webView.dispatchKeyEvent(it)
                     }
                 }
                 KeyEvent.KEYCODE_BACK -> {
                     if (it.action == KeyEvent.ACTION_UP) {
+                        if (!::webView.isInitialized) return false
                         if (webView.canGoBack()) { webView.goBack(); return true }
                     }
                 }
@@ -216,14 +220,20 @@ class MainActivity : AppCompatActivity() {
         return super.dispatchKeyEvent(event)
     }
 
-    override fun onResume() { super.onResume(); webView.visibility = View.VISIBLE }
-    override fun onPause() { super.onPause(); webView.visibility = View.INVISIBLE }
+    override fun onResume() {
+        super.onResume()
+        if (::webView.isInitialized) webView.visibility = View.VISIBLE
+    }
+    override fun onPause() {
+        super.onPause()
+        if (::webView.isInitialized) webView.visibility = View.INVISIBLE
+    }
 
     private fun showLoading() { loadingOverlay.visibility = View.VISIBLE; errorView.visibility = View.GONE }
     private fun hideLoading() { loadingOverlay.visibility = View.GONE; webView.visibility = View.VISIBLE }
     private fun showError(msg: String) {
         loadingOverlay.visibility = View.GONE; errorView.visibility = View.VISIBLE
-        errorView.text = msg
+        errorMessage.text = msg
     }
 
     /** Bridge called by injected JavaScript to intercept dynamically loaded video URLs. */
