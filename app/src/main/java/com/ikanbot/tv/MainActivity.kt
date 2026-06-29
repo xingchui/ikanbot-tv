@@ -28,10 +28,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorView: View
     private lateinit var errorMessage: TextView
 
+    /** Only actual video file extensions — NOT page paths like /play/ (those are HTML pages). */
     private val VIDEO_PATTERNS = listOf(
-        "/play/", "/vod/", "/watch/", "/detail/",
-        "player", "video", "m3u8", ".mp4",
-        "/ep/", "/episode/", "/film/", "/series/"
+        ".mp4", ".m3u8", ".ts", ".webm", ".mkv", ".flv", ".avi"
     )
 
     private val VERIFY_KEYWORDS = listOf(
