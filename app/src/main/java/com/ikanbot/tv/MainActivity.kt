@@ -28,14 +28,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var errorView: View
     private lateinit var errorMessage: TextView
 
-    /** Only actual video file extensions — NOT page paths like /play/ (those are HTML pages). */
+    /** Only actual video file extensions — ExoPlayer can play these natively. */
     private val VIDEO_PATTERNS = listOf(
         ".mp4", ".m3u8", ".ts", ".webm", ".mkv", ".flv", ".avi"
     )
 
+    /** Page path patterns that indicate a video play page.
+     *  These require a real browser for Cloudflare verification + full JS rendering. */
+    private val PLAY_PAGE_PATTERNS = listOf(
+        "/play/", "/vod/", "/watch/", "/detail/",
+        "/ep/", "/episode/", "/film/", "/series/"
+    )
+
     private val VERIFY_KEYWORDS = listOf(
         "验证", "captcha", "geetest", "security",
-        "正在验证", "自动程序", "安全服务"
+        "正在验证", "自动程序", "安全服务",
+        "请稍候", "challenge", "cdn-cgi",
+        "challenges.cloudflare.com"
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,6 +109,11 @@ class MainActivity : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 injectAntiDetection()
                 hideLoading()
+                // Safety net: if the loaded page title shows a verification challenge,
+                // redirect to the system browser where Cloudflare can complete.
+                if (url != null && isVerifyPage(url, view?.title)) {
+                    openInBrowser(url)
+                }
             }
 
             override fun onReceivedError(
@@ -114,7 +128,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleUrlOverride(url: String): Boolean = when {
+        // Play pages (Cloudflare challenge + full JS) → system browser
+        isPlayPage(url) -> { openInBrowser(url); true }
+        // Direct video streams → ExoPlayer
         isVideoUrl(url) -> { openInBrowser(url); true }
+        // Verification/captcha pages → system browser
         isVerifyPage(url, null) -> { openInBrowser(url); true }
         else -> false
     }
@@ -170,6 +188,8 @@ class MainActivity : AppCompatActivity() {
     private fun loadHomePage() { showLoading(); webView.loadUrl("https://www.ikanbot.com/") }
 
     private fun isVideoUrl(url: String) = VIDEO_PATTERNS.any { url.contains(it, true) }
+
+    private fun isPlayPage(url: String) = PLAY_PAGE_PATTERNS.any { url.contains(it, true) }
 
     private fun isVerifyPage(url: String?, title: String?) =
         listOfNotNull(url, title).joinToString(" ").lowercase().let { txt ->
