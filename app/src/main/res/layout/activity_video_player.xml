@@ -10,9 +10,5 @@
     app:use_controller="true"
     app:show_buffering="when_playing"
     app:resize_mode="fit"
-    app:rewind_increment="10000"
-    app:fastforward_increment="30000"
     app:show_fastforward_button="true"
-    app:show_rewind_button="true"
-    app:show_multi_window_time_bar="true"
-    app:controller_show_timeout_ms="60000" />
+    app:show_rewind_button="true" />
