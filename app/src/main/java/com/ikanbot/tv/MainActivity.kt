@@ -208,10 +208,9 @@ class MainActivity : AppCompatActivity() {
             }
         } else {
             try {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                })
-                Toast.makeText(this, "将在浏览器中打开", Toast.LENGTH_SHORT).show()
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                // Show chooser every time so user can pick browser or return to app
+                startActivity(Intent.createChooser(intent, "选择播放应用"))
             } catch (e: ActivityNotFoundException) {
                 Toast.makeText(this, "未找到可用的浏览器", Toast.LENGTH_LONG).show()
             }
