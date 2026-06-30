@@ -52,8 +52,6 @@ class VideoPlayerActivity : AppCompatActivity() {
             })
         }
         playerView.player = player
-        playerView.setRewindIncrement(10000)
-        playerView.setFastForwardIncrement(30000)
     }
 
     override fun dispatchKeyEvent(event: KeyEvent?): Boolean {
